@@ -121,22 +121,19 @@ namespace SdlMandelbrot
             double mwidth = mright - mleft;
             double mheight = mbottom - mtop;
 
-            int magnification = 1;
+            double magnification = 1.0;
             double bwidth = mwidth / magnification;
             double bheight = mheight / magnification;
 
-            for (int Y = 0; Y < magnification; Y++)
-            {
-                for (int X = 0; X < magnification; X++)
-                {
-                    double cleft = mleft + (bwidth * X);
-                    double cright = mleft + (bwidth * (X + 1));
-                    double ctop = mtop + (bheight * Y);
-                    double cbottom = mtop + (bheight * (Y + 1));
+            int magnificationblockx = 0;
+            int magnificationblocky = 0;
 
-                    processPixels(cleft, cright, ctop, cbottom);
-                }
-            }
+            double cleft = mleft + (bwidth * magnificationblockx);
+            double cright = mleft + (bwidth * (magnificationblockx + 1));
+            double ctop = mtop + (bheight * magnificationblocky);
+            double cbottom = mtop + (bheight * (magnificationblocky + 1));
+
+            processPixels(cleft, cright, ctop, cbottom);
         }
 
         private void processPixels(double left, double right, double top, double bottom)
