@@ -16,8 +16,8 @@ namespace SdlMandelbrot
 
         private Color[] _colours;
 
-        private int _currentX;
-        private int _currentY;
+        private int _currentPixelX;
+        private int _currentPixelY;
 
         private int _maxIterations = 0xFF;
         private double _magnification = 1.0;
@@ -154,7 +154,7 @@ namespace SdlMandelbrot
             {
                 for (int x = 0; x < _width; x++)
                 {
-                    if (x == _currentX && y == _currentY)
+                    if (x == _currentPixelX && y == _currentPixelY)
                     {
                         SDL.SDL_SetRenderDrawColor(_renderer, 0xFF, 0xFF, 0xFF, 0xFF);
                     }
@@ -211,24 +211,24 @@ namespace SdlMandelbrot
         {
             _working = true;
 
-            double mleft = -2;
-            double mright = 1;
-            double mtop = -1.5;
-            double mbottom = 1.5;
-            double mwidth = mright - mleft;
-            double mheight = mbottom - mtop;
+            double fractal_left = -2;
+            double fractal_right = 1;
+            double fractal_top = -1.5;
+            double fractal_bottom = 1.5;
+            double fractal_width = fractal_right - fractal_left;
+            double fractal_height = fractal_bottom - fractal_top;
 
-            double bwidth = mwidth / _magnification;
-            double bheight = mheight / _magnification;
+            double viewable_width = fractal_width / _magnification;
+            double viewable_height = fractal_height / _magnification;
 
-            double cleft = mleft + (bwidth * _magnificationblockx);
-            double cright = mleft + (bwidth * (_magnificationblockx + 1));
-            double ctop = mtop + (bheight * _magnificationblocky);
-            double cbottom = mtop + (bheight * (_magnificationblocky + 1));
+            double display_left = fractal_left + (viewable_width * _magnificationblockx);
+            double display_right = fractal_left + (viewable_width * (_magnificationblockx + 1));
+            double display_top = fractal_top + (viewable_height * _magnificationblocky);
+            double display_bottom = fractal_top + (viewable_height * (_magnificationblocky + 1));
 
             generateColours();
 
-            processPixels(cleft, cright, ctop, cbottom);
+            processPixels(display_left, display_right, display_top, display_bottom);
 
             _working = false;
         }
@@ -241,16 +241,16 @@ namespace SdlMandelbrot
             double hstep = width / _width;
             double vstep = height / _height;
 
-            _currentY = 0;
-            for (double y = top; _currentY < _height && _running; y+=vstep)
+            _currentPixelY = 0;
+            for (double pixelYValue = top; _currentPixelY < _height && _running; pixelYValue+=vstep)
             {
-                _currentX = 0;
-                for (double x = left; _currentX < _width && _running; x+=hstep)
+                _currentPixelX = 0;
+                for (double xpixelXValue = left; _currentPixelX < _width && _running; xpixelXValue += hstep)
                 {
-                    _pixels[_currentX + (_width * _currentY)] = processPixel(x, y);
-                    _currentX++;
+                    _pixels[_currentPixelX + (_width * _currentPixelY)] = processPixel(xpixelXValue, pixelYValue);
+                    _currentPixelX++;
                 }
-                _currentY++;
+                _currentPixelY++;
             }
         }
 
