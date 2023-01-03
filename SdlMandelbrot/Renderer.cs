@@ -14,12 +14,12 @@ namespace SdlMandelbrot
 
         private Color[] _pixels;
 
-        private const byte MAX_ITERATIONS = 0xFF;
         private Color[] _colours;
 
         private int _currentX;
         private int _currentY;
 
+        private int _maxIterations = 0xFF;
         private double _magnification = 1.0;
         private bool _working;
         private int _magnificationblockx = 0;
@@ -112,6 +112,20 @@ namespace SdlMandelbrot
                         launchWorker();
                     }
                     break;
+                case SDL.SDL_Keycode.SDLK_q:
+                    if (_working == false)
+                    {
+                        _maxIterations *= 2;
+                        launchWorker();
+                    }
+                    break;
+                case SDL.SDL_Keycode.SDLK_a:
+                    if (_working == false)
+                    {
+                        _maxIterations /= 2;
+                        launchWorker();
+                    }
+                    break;
             }
             setWindowTitle();
         }
@@ -160,8 +174,6 @@ namespace SdlMandelbrot
             _height = videoHeight;
 
             _pixels = new Color[_width * _height];
-
-            generateColours();
 
             _running = true;
 
@@ -214,6 +226,8 @@ namespace SdlMandelbrot
             double ctop = mtop + (bheight * _magnificationblocky);
             double cbottom = mtop + (bheight * (_magnificationblocky + 1));
 
+            generateColours();
+
             processPixels(cleft, cright, ctop, cbottom);
 
             _working = false;
@@ -248,7 +262,7 @@ namespace SdlMandelbrot
             y1 = y0 = y;
             int iteration = 0;
 
-            while (x1 * x1 + y1 * y1 <= (2 * 2) && iteration < MAX_ITERATIONS)
+            while (x1 * x1 + y1 * y1 <= (2 * 2) && iteration < _maxIterations)
             {
                 double xtemp = x1 * x1 - y1 * y1 + x0;
                 y1 = 2 * x1 * y1 + y0;
@@ -256,7 +270,7 @@ namespace SdlMandelbrot
                 iteration++;
             }
 
-            if (iteration == MAX_ITERATIONS)
+            if (iteration == _maxIterations)
             {
                 return Color.Black;
             }
@@ -266,18 +280,19 @@ namespace SdlMandelbrot
 
         private void generateColours()
         {
-            _colours = new Color[MAX_ITERATIONS];
-            int increment = 0;
-            for (byte r = 0x00; r < 0xff && increment < MAX_ITERATIONS; r += 25)
+            double max = 0xFF * 0xFF * 0xFF;
+            var step = (int)Math.Ceiling(max / _maxIterations);
+
+            _colours = new Color[_maxIterations];
+
+            int inc = 0;
+            for (int i = 0; i < max; i+= step)
             {
-                for (byte g = 0x00; g < 0xff && increment < MAX_ITERATIONS; g += 25)
-                {
-                    for (byte b = 0x00; b < 0xff && increment < MAX_ITERATIONS; b += 25)
-                    {
-                        _colours[increment] = Color.FromArgb(r, g, b);
-                        increment++;
-                    }
-                }
+                var r = (i >> 16) & 0x000000FF;
+                var g = (i >> 8) & 0x000000FF;
+                var b = (i >> 0) & 0x000000FF;
+                _colours[inc] = Color.FromArgb(r, g, b);
+                inc++;
             }
         }
     }
