@@ -20,6 +20,11 @@ namespace SdlMandelbrot
         private int _currentX;
         private int _currentY;
 
+        private double _magnification = 1.0;
+        private bool _working;
+        private int _magnificationblockx = 0;
+        private int _magnificationblocky = 0;
+
         private void initVideo(int videoWidth, int videoHeight)
         {
             if (SDL.SDL_Init(SDL.SDL_INIT_VIDEO) < 0)
@@ -51,8 +56,69 @@ namespace SdlMandelbrot
                     case SDL.SDL_EventType.SDL_QUIT:
                         _running = false;
                         break;
+                    case SDL.SDL_EventType.SDL_KEYDOWN:
+                        checkKey(e.key);
+                        break;
                 }
             }
+        }
+
+        private void checkKey(SDL.SDL_KeyboardEvent e)
+        {
+            switch (e.keysym.sym)
+            {
+                case SDL.SDL_Keycode.SDLK_ESCAPE:
+                    _running = false;
+                    break;
+                case SDL.SDL_Keycode.SDLK_PAGEUP:
+                    if (_working == false)
+                    {
+                        _magnification += 0.5;
+                        launchWorker();
+                    }
+                    break;
+                case SDL.SDL_Keycode.SDLK_PAGEDOWN:
+                    if (_working == false)
+                    {
+                        _magnification -= 0.5;
+                        launchWorker();
+                    }
+                    break;
+                case SDL.SDL_Keycode.SDLK_DOWN:
+                    if (_working == false)
+                    {
+                        _magnificationblocky += 1;
+                        launchWorker();
+                    }
+                    break;
+                case SDL.SDL_Keycode.SDLK_UP:
+                    if (_working == false)
+                    {
+                        _magnificationblocky -= 1;
+                        launchWorker();
+                    }
+                    break;
+                case SDL.SDL_Keycode.SDLK_RIGHT:
+                    if (_working == false)
+                    {
+                        _magnificationblockx += 1;
+                        launchWorker();
+                    }
+                    break;
+                case SDL.SDL_Keycode.SDLK_LEFT:
+                    if (_working == false)
+                    {
+                        _magnificationblockx -= 1;
+                        launchWorker();
+                    }
+                    break;
+            }
+            setWindowTitle();
+        }
+
+        private void setWindowTitle()
+        {
+            SDL.SDL_SetWindowTitle(_window, $"Mandelbrot {_magnification} {_magnificationblockx},{_magnificationblocky}");
         }
 
         private void clearScreen()
@@ -74,8 +140,15 @@ namespace SdlMandelbrot
             {
                 for (int x = 0; x < _width; x++)
                 {
-                    var c = _pixels[x + (_width * y)];
-                    SDL.SDL_SetRenderDrawColor(_renderer, c.R, c.G, c.B, c.A);
+                    if (x == _currentX && y == _currentY)
+                    {
+                        SDL.SDL_SetRenderDrawColor(_renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+                    }
+                    else
+                    {
+                        var c = _pixels[x + (_width * y)];
+                        SDL.SDL_SetRenderDrawColor(_renderer, c.R, c.G, c.B, c.A);
+                    }
                     SDL.SDL_RenderDrawPoint(_renderer, x, y);
                 }
             }
@@ -94,7 +167,9 @@ namespace SdlMandelbrot
 
             initVideo(videoWidth, videoHeight);
 
-            new Thread(worker).Start();
+            setWindowTitle();
+
+            launchWorker();
 
             while(_running)
             {
@@ -112,8 +187,18 @@ namespace SdlMandelbrot
             SDL.SDL_Quit();
         }
 
+        private void launchWorker()
+        {
+            if (_working == false)
+            {
+                new Thread(worker).Start();
+            }
+        }
+
         private void worker()
         {
+            _working = true;
+
             double mleft = -2;
             double mright = 1;
             double mtop = -1.5;
@@ -121,19 +206,17 @@ namespace SdlMandelbrot
             double mwidth = mright - mleft;
             double mheight = mbottom - mtop;
 
-            double magnification = 1.0;
-            double bwidth = mwidth / magnification;
-            double bheight = mheight / magnification;
+            double bwidth = mwidth / _magnification;
+            double bheight = mheight / _magnification;
 
-            int magnificationblockx = 0;
-            int magnificationblocky = 0;
-
-            double cleft = mleft + (bwidth * magnificationblockx);
-            double cright = mleft + (bwidth * (magnificationblockx + 1));
-            double ctop = mtop + (bheight * magnificationblocky);
-            double cbottom = mtop + (bheight * (magnificationblocky + 1));
+            double cleft = mleft + (bwidth * _magnificationblockx);
+            double cright = mleft + (bwidth * (_magnificationblockx + 1));
+            double ctop = mtop + (bheight * _magnificationblocky);
+            double cbottom = mtop + (bheight * (_magnificationblocky + 1));
 
             processPixels(cleft, cright, ctop, cbottom);
+
+            _working = false;
         }
 
         private void processPixels(double left, double right, double top, double bottom)
