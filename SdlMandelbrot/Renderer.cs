@@ -19,7 +19,7 @@ namespace SdlMandelbrot
         private int _currentPixelX;
         private int _currentPixelY;
 
-        private int _maxIterations = 0xFF;
+        private int _maxIterations = 256;
         private double _magnification = 1.0;
         private bool _working;
         private int _magnificationblockx = 0;
@@ -132,7 +132,7 @@ namespace SdlMandelbrot
 
         private void setWindowTitle()
         {
-            SDL.SDL_SetWindowTitle(_window, $"Mandelbrot {_magnification} {_magnificationblockx},{_magnificationblocky}");
+            SDL.SDL_SetWindowTitle(_window, $"Mandelbrot [Mag:{_magnification} Block:{_magnificationblockx},{_magnificationblocky} Iterations:{_maxIterations}]");
         }
 
         private void clearScreen()
