@@ -22,8 +22,8 @@ namespace SdlMandelbrot
         private int _maxIterations = 256;
         private double _magnification = 1.0;
         private bool _working;
-        private int _magnificationblockx = 0;
-        private int _magnificationblocky = 0;
+        private double _centreX = 0;
+        private double _centreY = 0;
 
         private void initVideo(int videoWidth, int videoHeight)
         {
@@ -87,28 +87,28 @@ namespace SdlMandelbrot
                 case SDL.SDL_Keycode.SDLK_DOWN:
                     if (_working == false)
                     {
-                        _magnificationblocky += 1;
+                        _centreY += (1.0 / _magnification);
                         launchWorker();
                     }
                     break;
                 case SDL.SDL_Keycode.SDLK_UP:
                     if (_working == false)
                     {
-                        _magnificationblocky -= 1;
+                        _centreY -= (1.0 / _magnification);
                         launchWorker();
                     }
                     break;
                 case SDL.SDL_Keycode.SDLK_RIGHT:
                     if (_working == false)
                     {
-                        _magnificationblockx += 1;
+                        _centreX += (1.0 / _magnification);
                         launchWorker();
                     }
                     break;
                 case SDL.SDL_Keycode.SDLK_LEFT:
                     if (_working == false)
                     {
-                        _magnificationblockx -= 1;
+                        _centreX -= (1.0 / _magnification);
                         launchWorker();
                     }
                     break;
@@ -132,7 +132,7 @@ namespace SdlMandelbrot
 
         private void setWindowTitle()
         {
-            SDL.SDL_SetWindowTitle(_window, $"Mandelbrot [Mag:{_magnification} Block:{_magnificationblockx},{_magnificationblocky} Iterations:{_maxIterations}]");
+            SDL.SDL_SetWindowTitle(_window, $"Mandelbrot [Mag:{_magnification} Centre:{_centreX},{_centreY} Iterations:{_maxIterations}]");
         }
 
         private void clearScreen()
@@ -221,10 +221,10 @@ namespace SdlMandelbrot
             double viewable_width = fractal_width / _magnification;
             double viewable_height = fractal_height / _magnification;
 
-            double display_left = fractal_left + (viewable_width * _magnificationblockx);
-            double display_right = fractal_left + (viewable_width * (_magnificationblockx + 1));
-            double display_top = fractal_top + (viewable_height * _magnificationblocky);
-            double display_bottom = fractal_top + (viewable_height * (_magnificationblocky + 1));
+            double display_left = _centreX - (viewable_width / 2);
+            double display_right = _centreX + (viewable_width / 2);
+            double display_top = _centreY - (viewable_height / 2);
+            double display_bottom = _centreY + (viewable_height / 2);
 
             generateColours();
 

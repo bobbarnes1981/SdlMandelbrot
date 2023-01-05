@@ -1,4 +1,4 @@
 ﻿
 using SdlMandelbrot;
 
-new Renderer().Run(640, 480);
+new Renderer().Run(1024, 768);
